@@ -1,22 +1,22 @@
 Attribute VB_Name = "Main"
 Sub AcharDocumentos()
 
-    '------------ VERIFICA«√O DE ERROS --------------
+    '------------ VERIFICA√á√ÉO DE ERROS --------------
     PenteFino = Verificar_Erros()
     If PenteFino = False Then
         Exit Sub
     End If
     
-    '--------------- DEFINI«√O DE VARIAVEIS ----------------
+    '--------------- DEFINI√á√ÉO DE VARIAVEIS ----------------
     Set ws = ThisWorkbook.Sheets("LOCALIZAR DOC")
     Caminho = ws.Range("A:E").Find("CAMINHO ORIGINAL").Offset(1, 0).Value
     CaminhoFinal = ws.Range("A:E").Find("PASTA ONDE").Offset(1, 0).Value
     Set Key_words = New Collection
     Set Fso = CreateObject("Scripting.FileSystemObject")
     
-    'OP«’ES
-    OpÁ„o_Pastas = ws.Range("A:E").Find("CAM. ORIG.?").Offset(1, 0).Value
-    OpÁ„o_CopRem = ws.Range("A:E").Find("OU MOVER?").Offset(1, 0).Value
+    'OP√á√ïES
+    Op√ß√£o_Pastas = ws.Range("A:E").Find("CAM. ORIG.?").Offset(1, 0).Value
+    Op√ß√£o_CopRem = ws.Range("A:E").Find("OU MOVER?").Offset(1, 0).Value
     
     '------------ CONFERENCIA PALAVRAS -------------
     For i = 1 To 10
@@ -31,52 +31,61 @@ Sub AcharDocumentos()
     '------------ LOOPING P/ PEGAR OS ARQUIVOS -------------
     Set Folder = Fso.GetFolder(Caminho)
     
-    If OpÁ„o_Pastas = "N√O" Then
-        Call AcharDoc(Folder, Key_words, OpÁ„o_CopRem, TotalWords, CaminhoFinal)
+    If Op√ß√£o_Pastas = "N√ÉO" Then
+        Call AcharDoc(Folder, Key_words, Op√ß√£o_CopRem, TotalWords, CaminhoFinal)
     Else
+        Call AcharDoc(Folder, Key_words, Op√ß√£o_CopRem, TotalWords, CaminhoFinal)
         For Each Pasta In Folder.SubFolders
-            Call AcharDoc(Folder, Key_words, OpÁ„o_CopRem, TotalWords, CaminhoFinal)
+            Call AcharDoc(Folder, Key_words, Op√ß√£o_CopRem, TotalWords, CaminhoFinal)
             
             Set Folder1 = Fso.GetFolder(Pasta)
             If Folder1.SubFolders.Count > 0 Then
-                For Each Pasta1 In Folder1.SubFolders
-                    Call AcharDoc(Pasta1, Key_words, OpÁ„o_CopRem, TotalWords, CaminhoFinal)
-                    
-                    Set Folder2 = Fso.GetFolder(Pasta1)
-                    For Each Pasta2 In Folder2.SubFolders
-                        Call AcharDoc(Pasta2, Key_words, OpÁ„o_CopRem, TotalWords, CaminhoFinal)
-                         
-                        Set Folder3 = Fso.GetFolder(Pasta2)
-                        For Each Pasta3 In Folder3.SubFolders
-                            Call AcharDoc(Pasta3, Key_words, OpÁ„o_CopRem, TotalWords, CaminhoFinal)
-                        Next Pasta3
-                    Next Pasta2
-                Next Pasta1
+                Call PercorrerPastas(Folder1, Key_words, Op√ß√£o_CopRem, TotalWords, CaminhoFinal)
             End If
         Next Pasta
     End If
     
 End Sub
 
-Sub AcharDoc(Folder, Key_words, OpÁ„o_CopRem, TotalWords, CaminhoFinal)
+Sub AcharDoc(Folder, Key_words, Op√ß√£o_CopRem, TotalWords, CaminhoFinal)
     Set Fso = CreateObject("Scripting.FileSystemObject")
     Set Pasta = Fso.GetFolder(Folder)
-    For Each File In Pasta.Files
-            NomeArq = File.Name
-            CaminhoArq = File.Path
-                
-            For Each Palavra In Key_words
-                If InStr(1, NomeArq, Palavra) > 0 Then
-                    Cont = Cont + 1
-                If Cont = TotalWords And OpÁ„o_CopRem = "COPIAR" Then
-                    Fso.CopyFile CaminhoArq, CaminhoFinal & "\" & NomeArq
-                ElseIf Cont = TotalWords And OpÁ„o_CopRem = "MOVER" Then
-                    Fso.mOVEFile CaminhoArq, CaminhoFinal & "\" & NomeArq
+    
+        For Each File In Pasta.Files
+                NomeArq = File.Name
+                CaminhoArq = File.Path
+                    
+                For Each Palavra In Key_words
+                    If InStr(1, NomeArq, Palavra) > 0 Then
+                        Cont = Cont + 1
+                    If Cont = TotalWords And Op√ß√£o_CopRem = "COPIAR" Then
+                        Fso.CopyFile CaminhoArq, CaminhoFinal & "\" & NomeArq
+                    ElseIf Cont = TotalWords And Op√ß√£o_CopRem = "MOVER" Then
+                        Fso.mOVEFile CaminhoArq, CaminhoFinal & "\" & NomeArq
+                    End If
                 End If
-            End If
-        Next Palavra
-        Cont = 0
-                
-    Next File
+            Next Palavra
+            Cont = 0
+                    
+        Next File
+        
 End Sub
 
+Sub PercorrerPastas(Folder, Key_words, Op√ß√£o_CopRem, TotalWords, CaminhoFinal)
+    Set Fso = CreateObject("Scripting.FileSystemObject")
+    If Folder.SubFolders.Count > 0 Then
+        For Each Pasta In Folder.SubFolders
+            Call AcharDoc(Pasta, Key_words, Op√ß√£o_CopRem, TotalWords, CaminhoFinal)
+            
+            Set Folder1 = Fso.GetFolder(Pasta)
+            If Folder1.SubFolders.Count > 0 Then
+                For Each Pasta1 In Folder1.SubFolders
+                    Call AcharDoc(Pasta1, Key_words, Op√ß√£o_CopRem, TotalWords, CaminhoFinal)
+                    Call PercorrerPastas(Pasta1, Key_words, Op√ß√£o_CopRem, TotalWords, CaminhoFinal)
+                Next Pasta1
+            End If
+        Next Pasta
+    Else
+        Call AcharDoc(Pasta, Key_words, Op√ß√£o_CopRem, TotalWords, CaminhoFinal)
+    End If
+End Sub
